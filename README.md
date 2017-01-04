@@ -20,7 +20,7 @@ index.html
 package.json
 README.md
 
-The project is already precompiled and minified, use node to run the project node index.js
+The project is already precompiled and minified, please run npm install for the Dependencies then use node to run the project node index.js
 
 if you want to use gulp features please type npm install (npm must be installed globally)
 Task runner features.
