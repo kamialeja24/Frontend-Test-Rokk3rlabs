@@ -1,5 +1,7 @@
-<h1>Charts</h1>
-<canvas id="line" class="chart chart-line" chart-data="data"
-chart-labels="labels" chart-series="series" chart-options="options"
-chart-dataset-override="datasetOverride" chart-click="onClick">
-</canvas
+<div class="chart">
+  <h1 class="chart-title">Line Chart</h1>
+  <div class="dimensions">
+    <canvas ng-if="data && series" width="500" height="300" ng-chart type="line" data="data" series="series" labels='labels'></canvas>
+    <!-- <button type="button" name="button" ng-click="randomSpeeds(data)">Ramdom</button> -->
+  </div>
+</div>

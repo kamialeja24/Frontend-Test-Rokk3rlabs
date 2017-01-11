@@ -1,56 +1,37 @@
 // Require Gulp
 var gulp = require('gulp'),
     sass = require('gulp-sass'),
+    minifyCss = require('gulp-minify-css'),
     uglify = require('gulp-uglify'),
     pump = require('pump'),
     eslint = require('gulp-eslint'),
     clean = require('gulp-rimraf'),
-    concatJs = require('gulp-concat'),
-    concatCss = require('gulp-concat-css'),
-    del = require('del'),
-    gls = require('gulp-live-server')
+    concat = require('gulp-concat'),
+    connect = require('gulp-connect')
+    // concatCss = require('gulp-concat-css'),
+    // del = require('del'),
+    // gls = require('gulp-live-server')
+
 
 gulp.task('sass', function () {
-  return gulp.src('./app/**/*.sass')
+  return gulp.src('app/**/*.sass')
     .pipe(sass().on('error', sass.logError))
-    .pipe(gulp.dest('./tmp/css'));
+    .pipe(minifyCss())
+    .pipe(concat('bundle.css'))
+    .pipe(gulp.dest('assets/css'))
+    .pipe(connect.reload());
 });
-
-gulp.task('compress', function (cb) {
-  pump([
-        gulp.src('./app/**/*.js'),
-        uglify(),
-        gulp.dest('tmp/js')
-    ],
-    cb
-  );
+gulp.task('js', function(){
+  return gulp.src('app/**/*.js')
+  .pipe(uglify())
+  .pipe(concat('scripts.js'))
+  .pipe(gulp.dest('assets/js'))
+  .pipe(connect.reload());
 });
-
-gulp.task('concatjs', ['compress'], function () {
-  return gulp.src('./tmp/js/**/*.js')
-    .pipe(concatJs('scripts.js'))
-    .pipe(gulp.dest('./assets/js/'));
-})
-
-gulp.task('concatcss', ['sass'], function(){
-  return gulp.src('./tmp/css/**/*.css')
-  .pipe(concatCss("bundle.css"))
-  .pipe(gulp.dest('./assets/css/'));
-})
 
 gulp.task('clean', function () {
   return gulp.src("assets/*", { read: false }).pipe(clean());
 });
-
-gulp.task('cleanTmp', ['concatcss', 'concatjs'], function () {
-  return del(['tmp']);
-});
-
-gulp.task('dist', ['clean'], function () {
-  gulp.start('concatjs');
-  gulp.start('concatcss');
-});
-
 
 gulp.task('lint', () => {
     return gulp.src(['./app/**/*.js'])
@@ -58,26 +39,25 @@ gulp.task('lint', () => {
         .pipe(eslint.format())
         .pipe(eslint.failAfterError());
 });
-
-gulp.task('default', function() {
-  gulp.start('dist');
+gulp.task('html',function(){
+  return gulp.src(['app/components/**/*.html', 'index.html'])
+  .pipe(connect.reload());
+});
+gulp.task('watch', function(){
+  // Watch .css files
+  gulp.watch('app/**/*.sass', ['sass']);
+  // Watch .js files
+  gulp.watch('app/**/*.js', ['js']);
+  // Watch html files
+  gulp.watch(['app/components/**/*.html', 'index.html'], ['html']);
 });
 
-gulp.task('serve', function(event) {
-  var server = gls.static(['./', './assets']);
-  server.start();
-
-  // Watch .css files
-  gulp.watch('app/**/*.css', ['concatcss'], function(file){
-    server.notify.apply(server, [file]);
+gulp.task('connect',function(){
+  connect.server({
+    root: './',
+    livereload: true
   });
+});
+gulp.task('serve',['sass','js','watch','connect'],function(){
 
-  // Watch .js files
-  gulp.watch('app/**/*.js', ['concatjs'], function(file){
-    server.notify.apply(server, [file]);
-  });
-
-  gulp.watch(['dist/**', 'app/components/**/*.html', 'index.html'], function(file){
-    server.notify.apply(server, [file]);
-  });
 });

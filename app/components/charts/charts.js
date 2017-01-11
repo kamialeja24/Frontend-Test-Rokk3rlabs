@@ -1,40 +1,18 @@
 'use strict';
-rokkerlabsTest.controller('ChartsCtrl', ['$scope', '$http', 'lodash', 'moment', '$timeout', function($scope, $http, lodash, moment, $timeout){
+rokkerlabsTest.controller('ChartsCtrl', ['$scope', '$http', 'lodash', 'moment', '$interval', function($scope, $http, lodash, moment, $interval){
   $scope.datajson = [];
+  $scope.labels = ['1'];
+  $scope.count = 2;
+
   var promise = $http.get('data.json');
   promise.then(
     function(response){
-      //$scope.series = getSeries(response.data);
+      $scope.series = getSeries(response.data);
       $scope.data = getSpeeds(response.data);
-      console.log($scope.data);
     }, function(err) {
       console.log(err);
     }
   );
-
-  $scope.labels = ["10 AM", "10 AM", "10 AM", "10 AM", "10 AM", "10 AM", "10 AM"];
-  $scope.onClick = function (points, evt) {
-    $scope.data = randomSpeeds($scope.data);
-  };
-  $scope.datasetOverride = [{ yAxisID: 'y-axis-1' }, { yAxisID: 'y-axis-2' }];
-  $scope.options = {
-    scales: {
-      yAxes: [
-        {
-          id: 'y-axis-1',
-          type: 'linear',
-          display: true,
-          position: 'left'
-        },
-        {
-          id: 'y-axis-2',
-          type: 'linear',
-          display: true,
-          position: 'right'
-        }
-      ]
-    }
-  };
 
   var getSeries = function (data){
     var series = [];
@@ -51,10 +29,18 @@ rokkerlabsTest.controller('ChartsCtrl', ['$scope', '$http', 'lodash', 'moment', 
     });
     return speeds;
   }
-  var randomSpeeds = function(speeds){
+ $scope.randomSpeeds = function(speeds){
     lodash.forEach(speeds, function (arr) {
       arr.push(Math.floor(Math.random() * (10 - 1 + 1)) + 1);
-    })
+    });
+    $scope.labels.push($scope.count.toString());
+    $scope.count++;
+    if(speeds[0].length === 11){
+      $scope.labels.shift();
+      lodash.forEach(speeds, function (arr) {
+        arr.shift();
+      });
+    }
   }
-    $timeout(randomSpeeds($scope.data), 1);
+  var interval = $interval(function(){$scope.randomSpeeds($scope.data)}, 1000);
 }]);
